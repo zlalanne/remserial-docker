@@ -1,0 +1,15 @@
+FROM resin/rpi-raspbian:wheezy-20181024
+
+WORKDIR /src/remserial
+COPY remserial-1.4 .
+RUN make
+
+FROM resin/rpi-raspbian:wheezy-20181024
+WORKDIR /root/
+COPY --from=builder /src/remserial/remserial .
+COPY run.sh .
+
+ENV REMSERIAL_FLAGS=""
+ENV REMSERIAL_DEVICE="/dev/remserial"
+
+CMD ["./run.sh"]
