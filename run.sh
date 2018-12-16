@@ -2,4 +2,4 @@
 
 set -x
 
-/root/remserial "${REMSERIAL_FLAGS}" "${REMSERIAL_DEVICE}"
+/root/remserial ${REMSERIAL_FLAGS} ${REMSERIAL_DEVICE}

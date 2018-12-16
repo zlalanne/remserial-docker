@@ -1,15 +1,20 @@
-FROM resin/rpi-raspbian:wheezy-20181024
+FROM resin/rpi-raspbian:wheezy-20181024 as builder
 
 WORKDIR /src/remserial
+RUN apt-get update && apt-get install build-essential
 COPY remserial-1.4 .
 RUN make
 
 FROM resin/rpi-raspbian:wheezy-20181024
+
 WORKDIR /root/
 COPY --from=builder /src/remserial/remserial .
 COPY run.sh .
 
+
 ENV REMSERIAL_FLAGS=""
 ENV REMSERIAL_DEVICE="/dev/remserial"
+
+USER root
 
 CMD ["./run.sh"]

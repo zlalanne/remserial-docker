@@ -100,24 +100,21 @@ int main(int argc, char *argv[])
 			usage(argv[0]);
 			exit(1);
 		}
-
 	sdevname = argv[optind];
 	remotefd = (int *) malloc (maxConnects * sizeof(int));
 
 	// struct group *getgrgid(gid_t gid);
 
-	/*
 	printf("sdevname=%s,port=%d,stty=%s\n",sdevname,port,sttyparms);
-	*/
 
-	openlog("remserial", LOG_PID, LOG_USER);
+	//openlog("remserial", LOG_PID, LOG_USER);
 
 	if (writeonly)
 		devfd = open(sdevname,O_WRONLY);
 	else
 		devfd = open(sdevname,O_RDWR);
 	if ( devfd == -1 ) {
-		syslog(LOG_ERR, "Open of %s failed: %m",sdevname);
+		printf("Open of %s failed: %m",sdevname);
 		exit(1);
 	}
 
@@ -137,8 +134,7 @@ int main(int argc, char *argv[])
 		   Find the IP address for the remote machine */
 		remotehost = gethostbyname(machinename);
 		if ( !remotehost ) {
-			syslog(LOG_ERR, "Couldn't determine address of %s",
-				machinename );
+			printf("Couldn't determine address of %s", machinename );
 			exit(1);
 		}
 
@@ -156,7 +152,7 @@ int main(int argc, char *argv[])
 		/* Open the initial socket for communications */
 		sockfd = socket(AF_INET, SOCK_STREAM, 6);
 		if ( sockfd == -1 ) {
-			syslog(LOG_ERR, "Can't open socket: %m");
+			printf("Can't open socket: %m");
 			exit(1);
 		}
 
@@ -167,7 +163,7 @@ int main(int argc, char *argv[])
 		/* Set up to listen on the given port */
 		if( bind( sockfd, (struct sockaddr*)(&addr),
 			sizeof(struct sockaddr_in)) < 0 ) {
-			syslog(LOG_ERR, "Couldn't bind port %d, aborting: %m",port );
+			printf("Couldn't bind port %d, aborting: %m",port );
 			exit(1);
 		}
 		if ( debug>1 )
@@ -176,12 +172,12 @@ int main(int argc, char *argv[])
 		/* Tell the system we want to listen on this socket */
 		result = listen(sockfd, 4);
 		if ( result == -1 ) {
-			syslog(LOG_ERR, "Socket listen failed: %m");
+			printf("Socket listen failed: %m");
 			exit(1);
 		}
 
 		if ( debug>1 )
-			syslog(LOG_NOTICE,"Done listen");
+			printf("Done listen");
 	}
 
 	if ( isdaemon ) {
@@ -228,7 +224,7 @@ int main(int argc, char *argv[])
 				&remoteaddrlen);
 
 			if ( fd == -1 )
-				syslog(LOG_ERR,"accept failed: %m");
+				printf("accept failed: %m");
 			else if (curConnects < maxConnects) {
 				unsigned long ip;
 
@@ -238,7 +234,7 @@ int main(int argc, char *argv[])
 				if ( fd >= maxfd )
 					maxfd = fd + 1;
 				ip = ntohl(remoteaddr.sin_addr.s_addr);
-				syslog(LOG_NOTICE, "Connection from %d.%d.%d.%d",
+				printf("Connection from %d.%d.%d.%d",
 					(int)(ip>>24)&0xff,
 					(int)(ip>>16)&0xff,
 					(int)(ip>>8)&0xff,
@@ -255,24 +251,24 @@ int main(int argc, char *argv[])
 			devbytes = read(devfd,devbuf,512);
 			//if ( debug>1 && devbytes>0 )
 			if (debug>1)
-				syslog(LOG_INFO,"Device: %d bytes",devbytes);
+				printf("Device: %d bytes",devbytes);
 			if ( devbytes <= 0 ) {
 				if ( debug>0 )
-					syslog(LOG_INFO,"%s closed",sdevname);
+					printf("%s closed",sdevname);
 				close(devfd);
 				FD_CLR(devfd,&fdsread);
 				while (1) {
 					devfd = open(sdevname,O_RDWR);
 					if ( devfd != -1 )
 						break;
-					syslog(LOG_ERR, "Open of %s failed: %m",
+					printf("Open of %s failed: %m",
 						sdevname);
 					if ( errno != EIO )
 						exit(1);
 					sleep(1);
 				}
 				if ( debug>0 )
-					syslog(LOG_INFO,"%s re-opened",sdevname);
+					printf("%s re-opened",sdevname);
 				if ( sttyparms )
 					set_tty(devfd,sttyparms);
 				if (linkname)
@@ -294,12 +290,12 @@ int main(int argc, char *argv[])
 
 				//if ( debug>1 && devbytes>0 )
 				if (debug>1)
-					syslog(LOG_INFO,"Remote: %d bytes",devbytes);
+					printf("Remote: %d bytes",devbytes);
 
 				if ( devbytes == 0 ) {
 					register int j;
 
-					syslog(LOG_NOTICE,"Connection closed");
+					printf("Connection closed");
 					close(remotefd[i]);
 					FD_CLR(remotefd[i],&fdsread);
 					curConnects--;
@@ -335,7 +331,7 @@ void sighandler(int sig)
 		close(devfd);
 	if (linkname)
 		unlink(linkname);
-	syslog(LOG_ERR,"Terminating on signal %d",sig);
+	printf("Terminating on signal %d",sig);
 	exit(0);
 }
 
@@ -356,7 +352,7 @@ void link_slave(int fd)
 			status = -1;
 	}
 	if (status == -1) {
-		syslog(LOG_ERR, "Cannot create link for pseudo-tty: %m");
+		printf("Cannot create link for pseudo-tty: %m");
 		exit(1);
 	}
 }
@@ -371,7 +367,7 @@ connect_to(struct sockaddr_in *addr)
 
 	if ( debug>0 ) {
 		unsigned long ip = ntohl(addr->sin_addr.s_addr);
-		syslog(LOG_NOTICE, "Trying to connect to %d.%d.%d.%d",
+		printf("Trying to connect to %d.%d.%d.%d",
 			(int)(ip>>24)&0xff,
 			(int)(ip>>16)&0xff,
 			(int)(ip>>8)&0xff,
@@ -382,7 +378,7 @@ connect_to(struct sockaddr_in *addr)
 		/* Open the socket for communications */
 		sockfd = socket(AF_INET, SOCK_STREAM, 6);
 		if ( sockfd == -1 ) {
-			syslog(LOG_ERR, "Can't open socket: %m");
+			printf("Can't open socket: %m");
 			exit(1);
 		}
 
@@ -393,25 +389,22 @@ connect_to(struct sockaddr_in *addr)
 			sizeof(struct sockaddr_in));
 		if ( debug>1 )
 			if (stat == -1)
-				syslog(LOG_NOTICE, "Connect status %d, errno %d: %m\n", stat,errno);
+				printf("Connect status %d, errno %d: %m\n", stat,errno);
 			else
-				syslog(LOG_NOTICE, "Connect status %d\n", stat);
+				printf("Connect status %d\n", stat);
 
 		if ( stat == 0 )
 			break;
 		/* Write a message to syslog once */
 		if ( ! waitlogged ) {
-			syslog(LOG_NOTICE,
-				"Waiting for server on %s port %d: %m",
-				machinename,port );
+			printf("Waiting for server on %s port %d: %m", machinename,port );
 			waitlogged = 1;
 		}
 		close(sockfd);
 		sleep(10);
 	}
 	if ( waitlogged || debug>0 )
-		syslog(LOG_NOTICE,
-			"Connected to server %s port %d",
+		printf("Connected to server %s port %d",
 			machinename,port );
 	return sockfd;
 }
