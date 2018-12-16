@@ -13,7 +13,6 @@ COPY run.sh .
 
 
 ENV REMSERIAL_FLAGS=""
-ENV REMSERIAL_DEVICE="/dev/remserial"
 
 USER root
 

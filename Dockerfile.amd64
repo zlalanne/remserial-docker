@@ -10,6 +10,5 @@ COPY --from=builder /src/remserial/remserial .
 COPY run.sh .
 
 ENV REMSERIAL_FLAGS=""
-ENV REMSERIAL_DEVICE="/dev/remserial"
 
 CMD ["./run.sh"]

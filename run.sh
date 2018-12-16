@@ -2,4 +2,5 @@
 
 set -x
 
-/root/remserial ${REMSERIAL_FLAGS} ${REMSERIAL_DEVICE}
+ls -la /dev
+/root/remserial ${REMSERIAL_FLAGS}
